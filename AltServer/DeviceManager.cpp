@@ -681,7 +681,7 @@ pplx::task<std::shared_ptr<WiredConnection>> DeviceManager::StartWiredConnection
 		idevice_connection_t connection = NULL;
 
 		/* Find Device */
-		if (idevice_new_ignore_network(&device, altDevice->identifier().c_str()) != IDEVICE_E_SUCCESS)
+		if (idevice_new_with_options(&device, altDevice->identifier().c_str(), (idevice_options)(IDEVICE_LOOKUP_USBMUX | IDEVICE_LOOKUP_NETWORK)) != IDEVICE_E_SUCCESS)
 		{
 			throw ServerError(ServerErrorCode::DeviceNotFound);
 		}
@@ -1112,7 +1112,7 @@ pplx::task<std::shared_ptr<NotificationConnection>> DeviceManager::StartNotifica
 		np_client_t client = NULL;
 
 		/* Find Device */
-		if (idevice_new_ignore_network(&device, altDevice->identifier().c_str()) != IDEVICE_E_SUCCESS)
+		if (idevice_new_with_options(&device, altDevice->identifier().c_str(), (idevice_options)(IDEVICE_LOOKUP_USBMUX | IDEVICE_LOOKUP_NETWORK)) != IDEVICE_E_SUCCESS)
 		{
 			throw ServerError(ServerErrorCode::DeviceNotFound);
 		}
@@ -1188,7 +1188,7 @@ std::vector<std::shared_ptr<Device>> DeviceManager::availableDevices(bool includ
         }
         else
         {
-            idevice_new_ignore_network(&device, udid);
+			idevice_new_with_options(&device, udid, (idevice_options)(IDEVICE_LOOKUP_USBMUX | IDEVICE_LOOKUP_NETWORK));
         }
         
         if (!device)

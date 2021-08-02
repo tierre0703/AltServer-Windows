@@ -11,6 +11,7 @@
 #include "AnisetteData.h"
 
 #include "ServerError.hpp"
+#include <codecvt>
 
 #define odslog(msg) { std::stringstream ss; ss << msg << std::endl; OutputDebugStringA(ss.str().c_str()); }
 
