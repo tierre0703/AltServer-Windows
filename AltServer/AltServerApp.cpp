@@ -9,6 +9,7 @@
 #include "AltServerApp.h"
 #include <windows.h>
 #include <windowsx.h>
+#include <string.h>
 #include <strsafe.h>
 
 #include "AppleAPI.hpp"
@@ -66,6 +67,9 @@ const char* REPROVISIONED_DEVICE_KEY = "ReprovisionedDevice";
 const char* STARTUP_ITEMS_KEY = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 std::string _verificationCode;
+
+
+
 
 HKEY OpenRegistryKey()
 {
