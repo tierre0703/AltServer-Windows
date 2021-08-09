@@ -849,7 +849,7 @@ pplx::task<plist_t> AppleAPI::SendRequest(std::string uri,
 				.then([=](std::vector<unsigned char> compressedData)
 					{
 						std::vector<uint8_t> decompressedData;
-
+						odslog("received size: " << compressedData.size() << "\n");
 						if (compressedData.size() > 2 && compressedData[0] == '<' && compressedData[1] == '?')
 						{
 							// Already decompressed
@@ -861,6 +861,7 @@ pplx::task<plist_t> AppleAPI::SendRequest(std::string uri,
 						}
 
 						std::string decompressedXML = std::string(decompressedData.begin(), decompressedData.end());
+						odslog("response data: " << decompressedXML << "\n");
 
 						plist_t plist = nullptr;
 						plist_from_xml(decompressedXML.c_str(), (int)decompressedXML.size(), &plist);

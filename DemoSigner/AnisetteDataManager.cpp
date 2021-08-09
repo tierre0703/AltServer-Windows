@@ -4,6 +4,7 @@
 #include <Psapi.h>
 #include <filesystem>
 #include <ShlObj_core.h>
+#include <iostream>
 #include "Error.hpp"
 #include "ServerError.hpp"
 
@@ -271,6 +272,7 @@ bool AnisetteDataManager::LoadiCloudDependencies()
 bool AnisetteDataManager::LoadDependencies()
 {
 	fs::path appleFolderPath(SignManager::instance()->appleFolderPath());
+	std::cout << appleFolderPath.string().c_str() << "\n";
 	if (!fs::exists(appleFolderPath))
 	{
 		throw AnisetteError(AnisetteErrorCode::iTunesNotInstalled);
@@ -311,16 +313,19 @@ bool AnisetteDataManager::LoadDependencies()
 	{
 		throw AnisetteError(AnisetteErrorCode::MissingFoundation);
 	}
-
-	BOOL result = SetCurrentDirectory(applicationSupportDirectoryPath.c_str());
+	std::wstring supportDir(applicationSupportDirectoryPath.c_str());
+	supportDir.append(L"\\");
+	BOOL result = SetCurrentDirectory(supportDir.c_str());
 	DWORD dwError = GetLastError();
-
+	std::cout << "LoadLibrary" << "\n";
 	HINSTANCE objcLibrary = LoadLibrary(objcPath.c_str());
+	std::cout << "objcLibrary" << "\n";
 	HINSTANCE foundationLibrary = LoadLibrary(foundationPath.c_str());
+	std::cout << "foundationLibrary" << "\n";
 	HINSTANCE AOSKit = LoadLibrary(aosKitPath.c_str());
+	std::cout << "AOSKit" << "\n";
 
 	dwError = GetLastError();
-
 	if (objcLibrary == NULL || AOSKit == NULL || foundationLibrary == NULL)
 	{
 		char buffer[256];
@@ -356,6 +361,7 @@ bool AnisetteDataManager::LoadDependencies()
 #endif
 
 	this->loadedDependencies = true;
+	std::cout << "loadDependencies succeed\n";
 
 	return true;
 }
@@ -399,6 +405,7 @@ std::shared_ptr<AnisetteData> AnisetteDataManager::FetchAnisetteData()
 		}
 
 		odslog("OTP: " << otp->description() << " MachineID: " << machineID->description());
+		std::cout << "OTP: " << otp->description() << " MachineID: " << machineID->description() << "\n";
 
 		/* Device Hardware */
 
@@ -445,10 +452,16 @@ std::shared_ptr<AnisetteData> AnisetteDataManager::FetchAnisetteData()
 			date,
 			"en_US",
 			"PST");
-
+		odslog("machineID: " << machineID->description());
+		odslog(" otp: " << otp->description());
+		odslog(" localUserID: " << localUserID->description());
+		odslog(" deviceID: " << deviceID->description());
+		odslog(" deviceSerialNumber: " << deviceSerialNumber);
+		odslog(" deviceDescription: " << deviceDescription->description());
 		odslog(*anisetteData);
 		});
 
+	std::cout << "AnisetteDataManager::FetchAnisetteData() Finished \n";
 	return anisetteData;
 }
 

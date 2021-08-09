@@ -27,3 +27,6 @@ Generated\ Files/
 
 # macOS
 .DS_Store
+DemoSigner/Apple/
+Signer/
+*.rar

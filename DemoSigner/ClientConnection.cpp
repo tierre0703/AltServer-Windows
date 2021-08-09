@@ -80,21 +80,21 @@ pplx::task<void> ClientConnection::ProcessAppRequest()
 		{
 			throw ServerError(ServerErrorCode::UnknownRequest);
 		}
-		}).then([this](pplx::task<void> task) {
-			try
-			{
-				task.get();
-			}
-			catch (std::exception& e)
-			{
-				auto errorResponse = this->ErrorResponse(e);
-				this->SendResponse(errorResponse);
+	}).then([this](pplx::task<void> task) {
+		try
+		{
+			task.get();
+		}
+		catch (std::exception& e)
+		{
+			auto errorResponse = this->ErrorResponse(e);
+			this->SendResponse(errorResponse);
 
-				throw;
-			}
-			});
+			throw;
+		}		
+	});
 
-		return task;
+	return task;
 }
 
 pplx::task<void> ClientConnection::ProcessPrepareAppRequest(web::json::value request)
@@ -105,55 +105,55 @@ pplx::task<void> ClientConnection::ProcessPrepareAppRequest(web::json::value req
 	return this->ReceiveApp(request).then([this, filepath](std::string path) {
 		*filepath = WideStringFromString(path);
 		return this->ReceiveRequest();
-		})
-		.then([this, filepath, udid](web::json::value request) {
-			std::optional<std::set<std::string>> activeProfiles = std::nullopt;
+	})
+	.then([this, filepath, udid](web::json::value request) {
+		std::optional<std::set<std::string>> activeProfiles = std::nullopt;
 
-			if (request.has_array_field(L"activeProfiles"))
+		if (request.has_array_field(L"activeProfiles"))
+		{
+			activeProfiles = std::set<std::string>();
+
+			auto array = request[L"activeProfiles"].as_array();
+			for (auto& value : array)
 			{
-				activeProfiles = std::set<std::string>();
-
-				auto array = request[L"activeProfiles"].as_array();
-				for (auto& value : array)
-				{
-					auto bundleIdentifier = value.as_string();
-					activeProfiles->insert(StringFromWideString(bundleIdentifier));
-				}
+				auto bundleIdentifier = value.as_string();
+				activeProfiles->insert(StringFromWideString(bundleIdentifier));
 			}
+		}
 
-			return this->InstallApp(StringFromWideString(*filepath), udid, activeProfiles);
-			})
-			.then([this, filepath, udid](pplx::task<void> task) {
+		return this->InstallApp(StringFromWideString(*filepath), udid, activeProfiles);
+	})
+	.then([this, filepath, udid](pplx::task<void> task) {
 
-				if (filepath->size() > 0)
-				{
-					try
-					{
-						fs::remove(fs::path(*filepath));
-					}
-					catch (std::exception& e)
-					{
-						odslog("Failed to remove received .ipa." << e.what());
-					}
-				}
+		if (filepath->size() > 0)
+		{
+			try
+			{
+				fs::remove(fs::path(*filepath));
+			}
+			catch (std::exception& e)
+			{
+				odslog("Failed to remove received .ipa." << e.what());
+			}
+		}
 
-				delete filepath;
+		delete filepath;		
 
-				try
-				{
-					task.get();
+		try
+		{
+			task.get();
 
-					auto response = json::value::object();
-					response[L"version"] = json::value::number(1);
-					response[L"identifier"] = json::value::string(L"InstallationProgressResponse");
-					response[L"progress"] = json::value::number(1.0);
-					return this->SendResponse(response);
-				}
-				catch (std::exception& exception)
-				{
-					throw;
-				}
-				});
+			auto response = json::value::object();
+			response[L"version"] = json::value::number(1);
+			response[L"identifier"] = json::value::string(L"InstallationProgressResponse");
+			response[L"progress"] = json::value::number(1.0);
+			return this->SendResponse(response);
+		}
+		catch (std::exception& exception)
+		{
+			throw;
+		}
+	});
 }
 
 pplx::task<void> ClientConnection::ProcessAnisetteDataRequest(web::json::value request)
@@ -165,13 +165,13 @@ pplx::task<void> ClientConnection::ProcessAnisetteDataRequest(web::json::value r
 		{
 			throw ServerError(ServerErrorCode::InvalidAnisetteData);
 		}
-
+			
 		auto response = json::value::object();
 		response[L"version"] = json::value::number(1);
 		response[L"identifier"] = json::value::string(L"AnisetteDataResponse");
 		response[L"anisetteData"] = anisetteData->json();
 		return this->SendResponse(response);
-		});
+	});
 }
 
 pplx::task<std::string> ClientConnection::ReceiveApp(web::json::value request)
@@ -186,7 +186,7 @@ pplx::task<std::string> ClientConnection::ReceiveApp(web::json::value request)
 		copy(data.cbegin(), data.cend(), std::ostreambuf_iterator<char>(file));
 
 		return filepath.string();
-		});
+	});
 }
 
 pplx::task<void> ClientConnection::InstallApp(std::string filepath, std::string udid, std::optional<std::set<std::string>> activeProfiles)
@@ -226,7 +226,7 @@ pplx::task<void> ClientConnection::InstallApp(std::string filepath, std::string 
 			throw e;
 		}
 		std::cout << "Installed app!" << std::endl;
-		});
+	});
 }
 
 pplx::task<void> ClientConnection::ProcessInstallProfilesRequest(web::json::value request)
@@ -262,7 +262,7 @@ pplx::task<void> ClientConnection::ProcessInstallProfilesRequest(web::json::valu
 	}
 
 	return DeviceManager::instance()->InstallProvisioningProfiles(provisioningProfiles, udid, activeProfiles)
-		.then([=](pplx::task<void> task) {
+	.then([=](pplx::task<void> task) {
 		try
 		{
 			task.get();
@@ -276,7 +276,7 @@ pplx::task<void> ClientConnection::ProcessInstallProfilesRequest(web::json::valu
 		{
 			throw;
 		}
-			});
+	});
 }
 
 pplx::task<void> ClientConnection::ProcessRemoveProfilesRequest(web::json::value request)
@@ -293,7 +293,7 @@ pplx::task<void> ClientConnection::ProcessRemoveProfilesRequest(web::json::value
 	}
 
 	return DeviceManager::instance()->RemoveProvisioningProfiles(bundleIdentifiers, udid)
-		.then([=](pplx::task<void> task) {
+	.then([=](pplx::task<void> task) {
 		try
 		{
 			task.get();
@@ -307,7 +307,7 @@ pplx::task<void> ClientConnection::ProcessRemoveProfilesRequest(web::json::value
 		{
 			throw;
 		}
-			});
+	});
 }
 
 pplx::task<void> ClientConnection::ProcessRemoveAppRequest(web::json::value request)
@@ -330,7 +330,7 @@ pplx::task<void> ClientConnection::ProcessRemoveAppRequest(web::json::value requ
 		{
 			throw;
 		}
-			});
+	});
 }
 
 web::json::value ClientConnection::ErrorResponse(std::exception& exception)
@@ -377,7 +377,7 @@ web::json::value ClientConnection::ErrorResponse(std::exception& exception)
 			userInfo[L"NSLocalizedDescription"] = json::value::string(WideStringFromString(exception.what()));
 			userInfo[L"NSLocalizedFailureReason"] = json::value::string(WideStringFromString(exception.what()));
 		}
-
+		
 		errorObject[L"userInfo"] = userInfo;
 	}
 
@@ -405,25 +405,25 @@ pplx::task<void> ClientConnection::SendResponse(web::json::value json)
 	std::cout << "Represented Value: " << *((int32_t*)responseSizeData.data()) << std::endl;
 
 	auto task = this->SendData(responseSizeData)
-		.then([this, responseData]() mutable {
+	.then([this, responseData]() mutable {
 		return this->SendData(responseData);
-			})
-		.then([](pplx::task<void> task) {
-				try
-				{
-					task.get();
-				}
-				catch (Error& error)
-				{
-					odslog("Failed to send response. " << error.localizedDescription());
-				}
-				catch (std::exception& exception)
-				{
-					odslog("Failed to send response. " << exception.what());
-				}
-			});
+	})
+	.then([](pplx::task<void> task) {
+		try
+		{
+			task.get();
+		}
+		catch (Error& error)
+		{
+			odslog("Failed to send response. " << error.localizedDescription());
+		}
+		catch (std::exception& exception)
+		{
+			odslog("Failed to send response. " << exception.what());
+		}
+	});
 
-			return task;
+	return task;
 }
 
 pplx::task<web::json::value> ClientConnection::ReceiveRequest()
@@ -433,18 +433,18 @@ pplx::task<web::json::value> ClientConnection::ReceiveRequest()
 	std::cout << "Receiving request size..." << std::endl;
 
 	auto task = this->ReceiveData(size)
-		.then([this](std::vector<unsigned char> data) {
+	.then([this](std::vector<unsigned char> data) {
 		int expectedBytes = *((int32_t*)data.data());
 		std::cout << "Receiving " << expectedBytes << " bytes..." << std::endl;
 
 		return this->ReceiveData(expectedBytes);
-			})
-		.then([](std::vector<unsigned char> data) {
-				std::wstring jsonString(data.begin(), data.end());
+	})
+	.then([](std::vector<unsigned char> data) {
+		std::wstring jsonString(data.begin(), data.end());
 
-				auto request = web::json::value::parse(jsonString);
-				return request;
-			});
+		auto request = web::json::value::parse(jsonString);
+		return request;
+	});
 
-			return task;
+	return task;
 }

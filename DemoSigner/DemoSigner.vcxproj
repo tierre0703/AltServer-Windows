@@ -86,12 +86,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;CORECRYPTO_DONOT_USE_TRANSPARENT_UNION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\AltSign;$(ProjectDir)..\Dependencies\libimobiledevice-vs\libplist\include;$(ProjectDir)..\Dependencies\libimobiledevice-vs\libimobiledevice\include;C:\Program Files\Bonjour SDK\Include;$(ProjectDir)..\Dependencies\WinSparkle\include;$(OPENSSL_DIR_X86)\include;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;C:\dev\vcpkg\vcpkg\packages\cpprestsdk_x86-windows\lib;$(SolutionDir)AltSign\Dependencies\regex\lib;$(SolutionDir)$(Configuration)\;$(SolutionDir)Dependencies\Libraries;$(SolutionDir)AltSign\Dependencies\corecrypto;$(OPENSSL_DIR_X86)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>imobiledevice.lib;libcrypto.lib;libssl.lib;AltSign.lib;Ws2_32.lib;plist.lib;regex.lib;ldid.lib;corecrypto.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

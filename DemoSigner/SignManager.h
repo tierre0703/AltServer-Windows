@@ -45,6 +45,9 @@ public:
 	void Stop();
 	void CheckForUpdates();
 
+	int STInstallApplication(std::optional<std::string> filepath, std::shared_ptr<Device> device, std::string appleID, std::string password);
+
+
 	pplx::task<std::shared_ptr<Application>> InstallApplication(std::optional<std::string> filepath, std::shared_ptr<Device> device, std::string appleID, std::string password);
 
 	void ShowNotification(std::string title, std::string message);
@@ -56,7 +59,7 @@ public:
 	bool automaticallyLaunchAtLogin() const;
 	void setAutomaticallyLaunchAtLogin(bool launch);
 
-	std::string serverID() const;
+	std::string serverID();
 	void setServerID(std::string serverID);
 
 	bool reprovisionedDevice() const;
@@ -70,11 +73,11 @@ private:
 	~SignManager();
 
 	static SignManager* _instance;
-
 	pplx::task<std::shared_ptr<Application>> _InstallApplication(std::optional<std::string> filepath, std::shared_ptr<Device> installDevice, std::string appleID, std::string password);
 
 	bool CheckDependencies();
 	bool CheckiCloudDependencies();
+	std::string _serverID;
 
 	std::string BrowseForFolder(std::wstring title, std::string folderPath);
 
@@ -125,4 +128,6 @@ private:
 		std::shared_ptr<Team> team,
 		std::shared_ptr<Certificate> certificate,
 		std::map<std::string, std::shared_ptr<ProvisioningProfile>> profiles);
+
+
 };

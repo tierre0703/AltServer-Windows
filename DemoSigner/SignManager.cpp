@@ -39,7 +39,8 @@
 //#include <winsparkle.h>
 #include <codecvt>
 
-#define odslog(msg) { std::stringstream ss; ss << msg << std::endl; OutputDebugStringA(ss.str().c_str()); }
+//#define odslog(msg) { std::stringstream ss; ss << msg << std::endl; OutputDebugStringA(ss.str().c_str()); }
+#define odslog(msg) { std::stringstream ss; ss << msg << std::endl; printf_s(ss.str().c_str()); }
 
 using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
@@ -518,8 +519,13 @@ void SignManager::CheckForUpdates()
 	//win_sparkle_check_update_with_ui();
 }
 
+
+
 pplx::task<std::shared_ptr<Application>> SignManager::InstallApplication(std::optional<std::string> filepath, std::shared_ptr<Device> installDevice, std::string appleID, std::string password)
 {
+	//auto serverID = make_uuid();
+	//this->setServerID(serverID);
+
 	return this->_InstallApplication(filepath, installDevice, appleID, password)
 		.then([=](pplx::task<std::shared_ptr<Application>> task) -> pplx::task<std::shared_ptr<Application>> {
 		try
@@ -627,6 +633,7 @@ pplx::task<std::shared_ptr<Application>> SignManager::_InstallApplication(std::o
 		})
 		.then([=](std::pair<std::shared_ptr<Account>, std::shared_ptr<AppleAPISession>> pair)
 			{
+
 				*account = *(pair.first);
 				*session = *(pair.second);
 
@@ -790,7 +797,10 @@ pplx::task<std::pair<std::shared_ptr<Account>, std::shared_ptr<AppleAPISession>>
 			_verificationCode = "";
 
 			return verificationCode;*/
-			return "";
+			std::cout << "Please input TwoFactor Verfication Code:\n";
+			std::string verificationCode;
+			std::cin >> verificationCode;
+			return verificationCode;
 			});
 	};
 
@@ -1417,6 +1427,7 @@ pplx::task<std::shared_ptr<Application>> SignManager::InstallApp(std::shared_ptr
 
 void SignManager::ShowNotification(std::string title, std::string message)
 {
+	std::cout << title.c_str() << message.c_str() << "\n";
 	/*HICON icon = (HICON)LoadImage(this->instanceHandle(), MAKEINTRESOURCE(IMG_MENUBAR), IMAGE_ICON, 0, 0, LR_MONOCHROME);
 
 	NOTIFYICONDATA niData;
@@ -1509,21 +1520,21 @@ bool SignManager::CheckiCloudDependencies()
 
 void SignManager::HandleAnisetteError(AnisetteError& error)
 {
-	/*switch ((AnisetteErrorCode)error.code())
+	switch ((AnisetteErrorCode)error.code())
 	{
 	case AnisetteErrorCode::iTunesNotInstalled:
 	case AnisetteErrorCode::iCloudNotInstalled:
 	{
-		wchar_t* title = NULL;
-		wchar_t* message = NULL;
+		std::string title;
+		std::string message;
 		std::string downloadURL;
 
 		switch ((AnisetteErrorCode)error.code())
 		{
 		case AnisetteErrorCode::iTunesNotInstalled:
 		{
-			title = (wchar_t*)L"iTunes Not Found";
-			message = (wchar_t*)LR"(Download the latest version of iTunes from apple.com (not the Microsoft Store) in order to continue using AltServer.
+			title = "iTunes Not Found";
+			message = R"(Download the latest version of iTunes from apple.com (not the Microsoft Store) in order to continue using AltServer.
 
 If you already have iTunes installed, please locate the "Apple" folder that was installed with iTunes. This can normally be found at:
 
@@ -1569,8 +1580,8 @@ If you already have iTunes installed, please locate the "Apple" folder that was 
 		}
 
 		case AnisetteErrorCode::iCloudNotInstalled:
-			title = (wchar_t*)L"iCloud Not Found";
-			message = (wchar_t*)LR"(Download the latest version of iCloud from apple.com (not the Microsoft Store) in order to continue using AltServer.
+			title = "iCloud Not Found";
+			message = R"(Download the latest version of iCloud from apple.com (not the Microsoft Store) in order to continue using AltServer.
 
 If you already have iCloud installed, please locate the "Apple" folder that was installed with iCloud. This can normally be found at:
 
@@ -1578,6 +1589,8 @@ If you already have iCloud installed, please locate the "Apple" folder that was 
 			downloadURL = "https://secure-appldnld.apple.com/windows/061-91601-20200323-974a39d0-41fc-4761-b571-318b7d9205ed/iCloudSetup.exe";
 			break;
 		}
+
+		/*
 
 		std::wstring completeMessage(message);
 		completeMessage += WideStringFromString(this->defaultAppleFolderPath());
@@ -1601,7 +1614,10 @@ If you already have iCloud installed, please locate the "Apple" folder that was 
 
 			this->setAppleFolderPath(folderPath);
 		}
-
+		*/
+		std::cout << title.c_str() << "\n";
+		std::cout << message.c_str() << "\n";
+		std::cout << downloadURL.c_str() << "\n";
 		break;
 	}
 
@@ -1610,9 +1626,10 @@ If you already have iCloud installed, please locate the "Apple" folder that was 
 	case AnisetteErrorCode::MissingFoundation:
 	case AnisetteErrorCode::MissingObjc:
 	{
-		std::wstring message = L"Please locate the 'Apple' folder installed with iTunes to continue using AltServer.\n\nThis can normally be found at:\n";
-		message += WideStringFromString(this->defaultAppleFolderPath());
+		std::string message = "Please locate the 'Apple' folder installed with iTunes to continue using AltServer.\n\nThis can normally be found at:\n";
+		message += this->defaultAppleFolderPath();
 
+		/*
 		int result = MessageBoxW(NULL, message.c_str(), WideStringFromString(error.localizedDescription()).c_str(), MB_OKCANCEL);
 		if (result != IDOK)
 		{
@@ -1628,7 +1645,8 @@ If you already have iCloud installed, please locate the "Apple" folder that was 
 		odslog("Chose Apple folder: " << folderPath);
 
 		this->setAppleFolderPath(folderPath);
-
+		*/
+		std::cout << message.c_str() << "\n";
 		break;
 	}
 
@@ -1637,7 +1655,7 @@ If you already have iCloud installed, please locate the "Apple" folder that was 
 		this->ShowAlert("Invalid iTunes Installation", error.localizedDescription());
 		break;
 	}
-	}*/
+	}
 }
 
 HWND SignManager::windowHandle() const
@@ -1684,15 +1702,20 @@ void SignManager::setAutomaticallyLaunchAtLogin(bool launch)
 	//RegCloseKey(hKey);
 }
 
-std::string SignManager::serverID() const
+std::string SignManager::serverID()
 {
 	//auto serverID = GetRegistryStringValue(SERVER_ID_KEY);
 	//return serverID;
-	return "";
+	if (_serverID == "")
+		_serverID = make_uuid();
+
+	return _serverID;
 }
 
 void SignManager::setServerID(std::string serverID)
 {
+	if (_serverID == "")
+		_serverID = make_uuid();
 	//SetRegistryStringValue(SERVER_ID_KEY, serverID);
 }
 
@@ -1722,10 +1745,13 @@ void SignManager::setReprovisionedDevice(bool reprovisionedDevice)
 
 std::string SignManager::defaultAppleFolderPath() const
 {
-	wchar_t* programFilesCommonDirectory;
-	SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0, NULL, &programFilesCommonDirectory);
+	//wchar_t* programFilesCommonDirectory;
+	//SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0, NULL, &programFilesCommonDirectory);
+	char curPath[MAX_PATH];
+	GetCurrentDirectoryA(MAX_PATH, curPath);
 
-	fs::path appleDirectoryPath(programFilesCommonDirectory);
+
+	fs::path appleDirectoryPath(curPath);
 	appleDirectoryPath.append("Apple");
 
 	return appleDirectoryPath.string();

@@ -653,9 +653,9 @@ pplx::task<std::pair<std::shared_ptr<Account>, std::shared_ptr<AppleAPISession>>
 					*adsidValue = std::string(adsid);
 					return this->FetchAuthToken(parameters, sk, anisetteData)
 					.then([=](std::string token) {
+						std::cout <<"FetchAccount: " << adsid << " " << token.c_str() << "\n";
 						auto session = std::make_shared<AppleAPISession>(*adsidValue, token, anisetteData);
 						*sessionValue = *session;
-
 						return this->FetchAccount(session);
 					})
 					.then([=](std::shared_ptr<Account> account) -> std::pair<std::shared_ptr<Account>, std::shared_ptr<AppleAPISession>> {
@@ -676,9 +676,10 @@ pplx::task<std::string> AppleAPI::FetchAuthToken(std::map<std::string, plist_t> 
 	plist_get_string_val(appNode, &appName);
 
 	std::string app(appName);
-
+	odslog("AppleAPI::FetchAuthToken");
 	return this->SendAuthenticationRequest(requestParameters, anisetteData)
 	.then([=](plist_t plist) {
+		odslog("AppleAPI::FetchAuthToken response");
 
 		auto encryptedTokenNode = plist_dict_get_item(plist, "et");
 		if (encryptedTokenNode == nullptr)
@@ -908,9 +909,11 @@ pplx::task<bool> AppleAPI::RequestTwoFactorCode(
 pplx::task<std::shared_ptr<Account>> AppleAPI::FetchAccount(std::shared_ptr<AppleAPISession> session)
 {
 	std::map<std::string, std::string> parameters = {};
+	odslog("AppleAPI::FetchAccount");
 	auto task = this->SendRequest("viewDeveloper.action", parameters, session, nullptr)
 		.then([=](plist_t plist)->std::shared_ptr<Account>
 		{	
+			odslog("AppleAPI::FetchAccount response");
 			auto account = this->ProcessResponse<shared_ptr<Account>>(plist, [](auto plist)
 				{
 					auto node = plist_dict_get_item(plist, "developer");
