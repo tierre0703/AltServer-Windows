@@ -39,7 +39,7 @@
 
 #include "resource.h"
 
-#include <winsparkle.h>
+//#include <winsparkle.h>
 
 #define odslog(msg) { std::stringstream ss; ss << msg << std::endl; OutputDebugStringA(ss.str().c_str()); }
 
@@ -356,8 +356,8 @@ void AltServerApp::Start(HWND windowHandle, HINSTANCE instanceHandle)
 	_windowHandle = windowHandle;
 	_instanceHandle = instanceHandle;
 
-	win_sparkle_set_appcast_url("https://altstore.io/altserver/sparkle-windows.xml");
-	win_sparkle_init();
+	//win_sparkle_set_appcast_url("https://altstore.io/altserver/sparkle-windows.xml");
+	//win_sparkle_init();
 
 	bool didLaunch = GetRegistryBoolValue(DID_LAUNCH_KEY);
 	if (!didLaunch)
@@ -420,12 +420,12 @@ void AltServerApp::Start(HWND windowHandle, HINSTANCE instanceHandle)
 
 void AltServerApp::Stop()
 {
-	win_sparkle_cleanup();
+	//win_sparkle_cleanup();
 }
 
 void AltServerApp::CheckForUpdates()
 {
-	win_sparkle_check_update_with_ui();
+	//win_sparkle_check_update_with_ui();
 }
 
 pplx::task<void> AltServerApp::InstallAltStore(std::shared_ptr<Device> installDevice, std::string appleID, std::string password)

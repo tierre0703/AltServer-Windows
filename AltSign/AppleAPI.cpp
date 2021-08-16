@@ -55,7 +55,6 @@ extern std::wstring WideStringFromString(std::string string);
 bool decompress(const uint8_t* input, size_t input_size, std::vector<uint8_t>& output)
 {
     auto decompressor = web::http::compression::builtin::make_decompressor(web::http::compression::builtin::algorithm::GZIP);
-    
     // Need to guard against attempting to decompress when we're already finished or encountered an error!
     if (input == nullptr || input_size == 0)
     {

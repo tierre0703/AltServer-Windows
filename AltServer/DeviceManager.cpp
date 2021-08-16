@@ -36,7 +36,7 @@
 extern std::string StringFromWideString(std::wstring wideString);
 extern std::wstring WideStringFromString(std::string string);
 
-void DeviceManagerUpdateStatus(plist_t command, plist_t status, void *udid);
+void DeviceManagerUpdateStatus(plist_t command, plist_t status, void* udid);
 void DeviceManagerUpdateAppDeletionStatus(plist_t command, plist_t status, void* udid);
 void DeviceDidChangeConnectionStatus(const idevice_event_t* event, void* user_data);
 
@@ -72,12 +72,12 @@ DeviceManager* DeviceManager::_instance = nullptr;
 
 DeviceManager* DeviceManager::instance()
 {
-    if (_instance == 0)
-    {
-        _instance = new DeviceManager();
-    }
-    
-    return _instance;
+	if (_instance == 0)
+	{
+		_instance = new DeviceManager();
+	}
+
+	return _instance;
 }
 
 DeviceManager::DeviceManager()
@@ -164,8 +164,8 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 					if (reinstall)
 					{
 						this->InstallProvisioningProfile(pair.second, mis);
-					}					
-				}				
+					}
+				}
 			}
 			catch (std::exception& exception)
 			{
@@ -315,7 +315,7 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 				if (item.is_regular_file())
 				{
 					numberOfFiles++;
-				}				
+				}
 			}
 
 			int writtenFiles = 0;
@@ -328,7 +328,7 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 					double progress = (double)writtenFiles / (double)numberOfFiles;
 					double weightedProgress = progress * 0.75;
 					progressCompletionHandler(weightedProgress);
-				});
+					});
 			}
 			catch (ServerError& e)
 			{
@@ -338,11 +338,11 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 					userInfo["NSLocalizedRecoverySuggestion"] = "Make sure Windows real-time protection is disabled on your computer then try again.";
 
 					throw ServerError((ServerErrorCode)e.code(), userInfo);
-				}	
+				}
 				else
 				{
 					throw;
-				}				
+				}
 			}
 			catch (std::exception& exception)
 			{
@@ -379,10 +379,10 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 				service = NULL;
 			}
 
-			/* Provisioning Profiles */			
+			/* Provisioning Profiles */
 			bool shouldManageProfiles = (activeProfiles.has_value() || (application->provisioningProfile() != NULL && application->provisioningProfile()->isFreeProvisioningProfile()));
 			if (shouldManageProfiles)
-			{				
+			{
 				// Free developer account was used to sign this app, so we need to remove all
 				// provisioning profiles in order to remain under sideloaded app limit.
 
@@ -402,7 +402,7 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 						// Cache all profiles to reinstall afterwards if we didn't provide activeProfiles.
 						(*cachedProfiles)[pair.first] = pair.second;
 					}
-				}				
+				}
 			}
 
 			lockdownd_client_free(client);
@@ -417,8 +417,8 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 			bool didBeginInstalling = false;
 			bool didFinishInstalling = false;
 
-			this->_installationProgressHandlers[UUID] = [device, client, ipc, afc, mis, service, finish, progressCompletionHandler, 
-				&waitingMutex, &cv, &didBeginInstalling, &didFinishInstalling, &serverError, &localizedError](double progress, int resultCode, char *name, char *description) {
+			this->_installationProgressHandlers[UUID] = [device, client, ipc, afc, mis, service, finish, progressCompletionHandler,
+				&waitingMutex, &cv, &didBeginInstalling, &didFinishInstalling, &serverError, &localizedError](double progress, int resultCode, char* name, char* description) {
 				double weightedProgress = progress * 0.25;
 				double adjustedProgress = weightedProgress + 0.75;
 
@@ -480,7 +480,7 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 			if (localizedError.has_value())
 			{
 				throw localizedError.value();
-			}			
+			}
 		}
 		catch (std::exception& exception)
 		{
@@ -500,30 +500,30 @@ pplx::task<void> DeviceManager::InstallApp(std::string appFilepath, std::string 
 		// Call finish outside try-block so if an exception is thrown, we don't
 		// catch it ourselves and "finish" again.
 		finish(device, client, ipc, afc, mis, service);
-	});
+		});
 }
 
 void DeviceManager::WriteDirectory(afc_client_t client, std::string directoryPath, std::string destinationPath, std::function<void(std::string)> wroteFileCallback)
 {
 	std::replace(destinationPath.begin(), destinationPath.end(), '\\', '/');
 
-    afc_make_directory(client, destinationPath.c_str());
-    
-    for (auto& file : fs::directory_iterator(directoryPath))
-    {
-        auto filepath = file.path();
-        
-        if (fs::is_directory(filepath))
-        {
-            auto destinationDirectoryPath = fs::path(destinationPath).append(filepath.filename().string());
-            this->WriteDirectory(client, filepath.string(), destinationDirectoryPath.string(), wroteFileCallback);
-        }
-        else
-        {
-            auto destinationFilepath = fs::path(destinationPath).append(filepath.filename().string());
-            this->WriteFile(client, filepath.string(), destinationFilepath.string(), wroteFileCallback);
-        }
-    }
+	afc_make_directory(client, destinationPath.c_str());
+
+	for (auto& file : fs::directory_iterator(directoryPath))
+	{
+		auto filepath = file.path();
+
+		if (fs::is_directory(filepath))
+		{
+			auto destinationDirectoryPath = fs::path(destinationPath).append(filepath.filename().string());
+			this->WriteDirectory(client, filepath.string(), destinationDirectoryPath.string(), wroteFileCallback);
+		}
+		else
+		{
+			auto destinationFilepath = fs::path(destinationPath).append(filepath.filename().string());
+			this->WriteFile(client, filepath.string(), destinationFilepath.string(), wroteFileCallback);
+		}
+	}
 }
 
 void DeviceManager::WriteFile(afc_client_t client, std::string filepath, std::string destinationPath, std::function<void(std::string)> wroteFileCallback)
@@ -532,35 +532,35 @@ void DeviceManager::WriteFile(afc_client_t client, std::string filepath, std::st
 	destinationPath = replace_all(destinationPath, "__colon__", ":");
 
 	odslog("Writing File: " << filepath.c_str() << " to: " << destinationPath.c_str());
-    
-    auto data = readFile(filepath.c_str());
-    
-    uint64_t af = 0;
-    if ((afc_file_open(client, destinationPath.c_str(), AFC_FOPEN_WRONLY, &af) != AFC_E_SUCCESS) || af == 0)
-    {
-        throw ServerError(ServerErrorCode::DeviceWriteFailed);
-    }
-    
-    uint32_t bytesWritten = 0;
-    
-    while (bytesWritten < data.size())
-    {
-        uint32_t count = 0;
-        
-        if (afc_file_write(client, af, (const char *)data.data() + bytesWritten, (uint32_t)data.size() - bytesWritten, &count) != AFC_E_SUCCESS)
-        {
-            throw ServerError(ServerErrorCode::DeviceWriteFailed);
-        }
-        
-        bytesWritten += count;
-    }
-    
-    if (bytesWritten != data.size())
-    {
-        throw ServerError(ServerErrorCode::DeviceWriteFailed);
-    }
-    
-    afc_file_close(client, af);
+
+	auto data = readFile(filepath.c_str());
+
+	uint64_t af = 0;
+	if ((afc_file_open(client, destinationPath.c_str(), AFC_FOPEN_WRONLY, &af) != AFC_E_SUCCESS) || af == 0)
+	{
+		throw ServerError(ServerErrorCode::DeviceWriteFailed);
+	}
+
+	uint32_t bytesWritten = 0;
+
+	while (bytesWritten < data.size())
+	{
+		uint32_t count = 0;
+
+		if (afc_file_write(client, af, (const char*)data.data() + bytesWritten, (uint32_t)data.size() - bytesWritten, &count) != AFC_E_SUCCESS)
+		{
+			throw ServerError(ServerErrorCode::DeviceWriteFailed);
+		}
+
+		bytesWritten += count;
+	}
+
+	if (bytesWritten != data.size())
+	{
+		throw ServerError(ServerErrorCode::DeviceWriteFailed);
+	}
+
+	afc_file_close(client, af);
 
 	wroteFileCallback(filepath);
 }
@@ -591,7 +591,7 @@ pplx::task<void> DeviceManager::RemoveApp(std::string bundleIdentifier, std::str
 			}
 		};
 
-		try 
+		try
 		{
 			/* Find Device */
 			if (idevice_new_with_options(&device, deviceUDID.c_str(), (enum idevice_options)((int)IDEVICE_LOOKUP_NETWORK | (int)IDEVICE_LOOKUP_USBMUX)) != IDEVICE_E_SUCCESS)
@@ -639,9 +639,9 @@ pplx::task<void> DeviceManager::RemoveApp(std::string bundleIdentifier, std::str
 			(bool success, int errorCode, char* errorName, char* errorDescription) {
 				if (!success)
 				{
-					std::map<std::string, std::string> userInfo = { 
-						{ "NSLocalizedFailure", ServerError(ServerErrorCode::AppDeletionFailed).localizedDescription() }, 
-						{ "NSLocalizedFailureReason", errorDescription } 
+					std::map<std::string, std::string> userInfo = {
+						{ "NSLocalizedFailure", ServerError(ServerErrorCode::AppDeletionFailed).localizedDescription() },
+						{ "NSLocalizedFailureReason", errorDescription }
 					};
 					serverError = std::make_optional<ServerError>(ServerErrorCode::AppDeletionFailed, userInfo);
 				}
@@ -672,7 +672,7 @@ pplx::task<void> DeviceManager::RemoveApp(std::string bundleIdentifier, std::str
 			cleanUp();
 			throw;
 		}
-	});
+		});
 }
 
 pplx::task<std::shared_ptr<WiredConnection>> DeviceManager::StartWiredConnection(std::shared_ptr<Device> altDevice)
@@ -698,7 +698,7 @@ pplx::task<std::shared_ptr<WiredConnection>> DeviceManager::StartWiredConnection
 
 		auto wiredConnection = std::make_shared<WiredConnection>(altDevice, connection);
 		return wiredConnection;
-	});
+		});
 }
 
 pplx::task<void> DeviceManager::InstallProvisioningProfiles(std::vector<std::shared_ptr<ProvisioningProfile>> provisioningProfiles, std::string deviceUDID, std::optional<std::set<std::string>> activeProfiles)
@@ -795,12 +795,12 @@ pplx::task<void> DeviceManager::InstallProvisioningProfiles(std::vector<std::sha
 
 			cleanUp();
 		}
-		catch (std::exception &exception)
+		catch (std::exception& exception)
 		{
 			cleanUp();
 			throw;
 		}
-	});
+		});
 }
 
 pplx::task<void> DeviceManager::RemoveProvisioningProfiles(std::set<std::string> bundleIdentifiers, std::string deviceUDID)
@@ -873,7 +873,7 @@ pplx::task<void> DeviceManager::RemoveProvisioningProfiles(std::set<std::string>
 			cleanUp();
 			throw;
 		}
-	});
+		});
 }
 
 std::map<std::string, std::shared_ptr<ProvisioningProfile>> DeviceManager::RemoveProvisioningProfiles(std::set<std::string> bundleIdentifiers, misagent_client_t mis)
@@ -919,7 +919,7 @@ std::map<std::string, std::shared_ptr<ProvisioningProfile>> DeviceManager::Remov
 
 				// We've already ignored a profile with this bundle identifier,
 				// so make sure we only ignore the newest one and remove the oldest one.
-				BOOL newerThanPreviousProfile = (timercmp(&expirationDateA, &expirationDateB, >) != 0);
+				BOOL newerThanPreviousProfile = (timercmp(&expirationDateA, &expirationDateB, > ) != 0);
 				auto oldestProfile = newerThanPreviousProfile ? previousProfile : provisioningProfile;
 				auto newestProfile = newerThanPreviousProfile ? provisioningProfile : previousProfile;
 
@@ -1150,116 +1150,116 @@ pplx::task<std::shared_ptr<NotificationConnection>> DeviceManager::StartNotifica
 
 		auto notificationConnection = std::make_shared<NotificationConnection>(altDevice, client);
 		return notificationConnection;
-	});
+		});
 }
 
 std::vector<std::shared_ptr<Device>> DeviceManager::connectedDevices() const
 {
-    auto devices = this->availableDevices(false);
-    return devices;
+	auto devices = this->availableDevices(false);
+	return devices;
 }
 
 std::vector<std::shared_ptr<Device>> DeviceManager::availableDevices() const
 {
-    auto devices = this->availableDevices(true);
-    return devices;
+	auto devices = this->availableDevices(true);
+	return devices;
 }
 
 std::vector<std::shared_ptr<Device>> DeviceManager::availableDevices(bool includeNetworkDevices) const
 {
-    std::vector<std::shared_ptr<Device>> availableDevices;
+	std::vector<std::shared_ptr<Device>> availableDevices;
 
-    int count = 0;
+	int count = 0;
 
-    idevice_info_t* devices = NULL;
-    if (idevice_get_device_list_extended(&devices, &count) < 0)
-    {
-        fprintf(stderr, "ERROR: Unable to retrieve device list!\n");
-        return availableDevices;
-    }
+	idevice_info_t* devices = NULL;
+	if (idevice_get_device_list_extended(&devices, &count) < 0)
+	{
+		fprintf(stderr, "ERROR: Unable to retrieve device list!\n");
+		return availableDevices;
+	}
 
-    for (int i = 0; i < count; i++)
-    {
-        idevice_info_t device_info = devices[i];
-        char* udid = device_info->udid;
+	for (int i = 0; i < count; i++)
+	{
+		idevice_info_t device_info = devices[i];
+		char* udid = device_info->udid;
 
-        idevice_t device = NULL;
-        lockdownd_client_t client = NULL;
+		idevice_t device = NULL;
+		lockdownd_client_t client = NULL;
 
-        char* device_name = NULL;
+		char* device_name = NULL;
 
-        auto cleanUp = [&]() {
-            if (device_name) {
-                free(device_name);
-            }
+		auto cleanUp = [&]() {
+			if (device_name) {
+				free(device_name);
+			}
 
-            if (client) {
-                lockdownd_client_free(client);
-            }
+			if (client) {
+				lockdownd_client_free(client);
+			}
 
-            if (device) {
-                idevice_free(device);
-            }
-        };
+			if (device) {
+				idevice_free(device);
+			}
+		};
 
-        if (includeNetworkDevices)
-        {
-            idevice_new_with_options(&device, udid, (enum idevice_options)((int)IDEVICE_LOOKUP_NETWORK | (int)IDEVICE_LOOKUP_USBMUX));
-        }
-        else
-        {
-            idevice_new_with_options(&device, udid, IDEVICE_LOOKUP_USBMUX);
-        }
+		if (includeNetworkDevices)
+		{
+			idevice_new_with_options(&device, udid, (enum idevice_options)((int)IDEVICE_LOOKUP_NETWORK | (int)IDEVICE_LOOKUP_USBMUX));
+		}
+		else
+		{
+			idevice_new_with_options(&device, udid, IDEVICE_LOOKUP_USBMUX);
+		}
 
-        if (!device)
-        {
-            continue;
-        }
+		if (!device)
+		{
+			continue;
+		}
 
-        int result = lockdownd_client_new(device, &client, "altserver");
-        if (result != LOCKDOWN_E_SUCCESS)
-        {
-            fprintf(stderr, "ERROR: Connecting to device %s failed! (%d)\n", udid, result);
+		int result = lockdownd_client_new(device, &client, "altserver");
+		if (result != LOCKDOWN_E_SUCCESS)
+		{
+			fprintf(stderr, "ERROR: Connecting to device %s failed! (%d)\n", udid, result);
 
-            cleanUp();
-            continue;
-        }
+			cleanUp();
+			continue;
+		}
 
-        if (lockdownd_get_device_name(client, &device_name) != LOCKDOWN_E_SUCCESS || device_name == NULL)
-        {
-            fprintf(stderr, "ERROR: Could not get device name!\n");
+		if (lockdownd_get_device_name(client, &device_name) != LOCKDOWN_E_SUCCESS || device_name == NULL)
+		{
+			fprintf(stderr, "ERROR: Could not get device name!\n");
 
-            cleanUp();
-            continue;
-        }
+			cleanUp();
+			continue;
+		}
 
-        bool isDuplicate = false;
+		bool isDuplicate = false;
 
-        for (auto& device : availableDevices)
-        {
-            if (device->identifier() == udid)
-            {
-                // Duplicate.
-                isDuplicate = true;
-                break;
-            }
-        }
+		for (auto& device : availableDevices)
+		{
+			if (device->identifier() == udid)
+			{
+				// Duplicate.
+				isDuplicate = true;
+				break;
+			}
+		}
 
-        if (isDuplicate)
-        {
-            cleanUp();
-            continue;
-        }
+		if (isDuplicate)
+		{
+			cleanUp();
+			continue;
+		}
 
-        auto altDevice = std::make_shared<Device>(device_name, udid);
-        availableDevices.push_back(altDevice);
+		auto altDevice = std::make_shared<Device>(device_name, udid);
+		availableDevices.push_back(altDevice);
 
-        cleanUp();
-    }
+		cleanUp();
+	}
 
-    idevice_device_list_extended_free(devices);
+	idevice_device_list_extended_free(devices);
 
-    return availableDevices;
+	return availableDevices;
 }
 
 std::function<void(std::shared_ptr<Device>)> DeviceManager::connectedDeviceCallback() const
@@ -1289,15 +1289,15 @@ std::map<std::string, std::shared_ptr<Device>>& DeviceManager::cachedDevices()
 
 #pragma mark - Callbacks -
 
-void DeviceManagerUpdateStatus(plist_t command, plist_t status, void *uuid)
+void DeviceManagerUpdateStatus(plist_t command, plist_t status, void* uuid)
 {
 	if (DeviceManager::instance()->_installationProgressHandlers.count((char*)uuid) == 0)
 	{
 		return;
 	}
-    
-    int percent = 0;
-    instproxy_status_get_percent_complete(status, &percent);
+
+	int percent = 0;
+	instproxy_status_get_percent_complete(status, &percent);
 
 	char* name = NULL;
 	char* description = NULL;
@@ -1312,7 +1312,7 @@ void DeviceManagerUpdateStatus(plist_t command, plist_t status, void *uuid)
 
 void DeviceManagerUpdateAppDeletionStatus(plist_t command, plist_t status, void* uuid)
 {
-	char *statusName = NULL;
+	char* statusName = NULL;
 	instproxy_status_get_name(status, &statusName);
 
 	char* errorName = NULL;
@@ -1387,7 +1387,7 @@ void DeviceDidChangeConnectionStatus(const idevice_event_t* event, void* user_da
 		{
 			DeviceManager::instance()->connectedDeviceCallback()(device);
 		}
-		
+
 		break;
 	}
 	case IDEVICE_DEVICE_REMOVE:
